@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白羽町成年会 公式ウェブサイト</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF6;
+            color: #2D3748;
+        }
+        .nav-link {
+            transition: color 0.3s, transform 0.3s;
+        }
+        .nav-link:hover {
+            color: #4C51BF;
+            transform: translateY(-2px);
+        }
+        .slide {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .active-slide {
+            opacity: 1;
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .scroll-to-top {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .scroll-to-top.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* カスタムモーダル用スタイル */
+        .custom-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+        }
+
+        /* PCでのスライド画像のアニメーションをより滑らかに */
+        @media (min-width: 768px) {
+            .slide.active-slide {
+                transition: opacity 1s ease-in-out, transform 5s linear;
+                transform: scale(1);
+            }
+            .slide {
+                transform: scale(1.05);
+            }
+            #takoagekai {
+                background-attachment: fixed;
+            }
+        }
+        /* モバイルではシンプルにフェードのみ */
+        @media (max-width: 767px) {
+            #takoagekai {
+                background-attachment: scroll;
+            }
+        }
+    </style>
+</head>
+<body class="bg-FDFBF6 text-gray-800 scroll-smooth">
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 既存のロジック（省略） ---
+            
+            // Slideshow Logic with IntersectionObserver
+            const slideshowContainer = document.getElementById('slideshow-container');
+            const slides = document.querySelectorAll('.slide');
+            let currentSlide = 0;
+            let slideInterval;
+            
+            const nextSlide = () => {
+                slides[currentSlide].classList.remove('active-slide');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active-slide');
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (!slideInterval) {
+                            slides[currentSlide].classList.add('active-slide');
+                            slideInterval = setInterval(nextSlide, 5000);
+                        }
+                    } else {
+                        clearInterval(slideInterval);
+                        slideInterval = null;
+                        slides[currentSlide].classList.remove('active-slide');
+                    }
+                });
+            }, { threshold: 0.5 }); // 画面の50%が見えたら発動
+
+            observer.observe(slideshowContainer);
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                mobileMenuButton.innerHTML = mobileMenu.classList.contains('hidden') ? 
+                    `<svg id="menu-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path></svg>` : 
+                    `<svg id="close-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            });
+
+            // Scroll to top button
+            const scrollToTopButton = document.getElementById('scroll-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollToTopButton.classList.add('show');
+                } else {
+                    scrollToTopButton.classList.remove('show');
+                }
+            });
+            scrollToTopButton.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // --- カスタムパスワード認証ロジック ---
+            const SECRET_PASSWORD = '468'; // ここがパスワードです
+
+            const passwordConfigs = {
+                kiyaku: {
+                    toggleButtonId: 'toggle-kiyaku-text',
+                    contentId: 'kiyaku-text-content',
+                    modalId: 'kiyaku-modal',
+                    input: 'kiyaku-password-input',
+                    submit: 'kiyaku-submit-btn',
+                    error: 'kiyaku-error-message',
+                    close: 'kiyaku-close-btn',
+                    title: '白羽町成年会規約',
+                },
+                naiki: {
+                    toggleButtonId: 'toggle-naiki-text',
+                    contentId: 'naiki-text-content',
+                    modalId: 'naiki-modal',
+                    input: 'naiki-password-input',
+                    submit: 'naiki-submit-btn',
+                    error: 'naiki-error-message',
+                    close: 'naiki-close-btn',
+                    title: '白羽町成年会内規',
+                }
+            };
+
+            const setupAuth = (config) => {
+                const toggleButton = document.getElementById(config.toggleButtonId);
+                const content = document.getElementById(config.contentId);
+                const modal = document.getElementById(config.modalId);
+                const passwordInput = document.getElementById(config.input);
+                const submitButton = document.getElementById(config.submit);
+                const errorMessage = document.getElementById(config.error);
+                const closeButton = document.getElementById(config.close);
+
+                if (!toggleButton || !content || !modal || !passwordInput || !submitButton) return;
+
+                // 初期状態設定
+                content.classList.add('hidden');
+                toggleButton.textContent = '規約を開く（パスワード必要）';
+                modal.classList.add('hidden'); // モーダルを非表示に
+
+                // 1. 開閉ボタンクリックハンドラ
+                toggleButton.addEventListener('click', () => {
+                    if (content.classList.contains('hidden')) {
+                        // 開く場合：モーダルを表示
+                        modal.classList.remove('hidden');
+                        errorMessage.classList.add('hidden'); // エラーメッセージをリセット
+                        passwordInput.value = ''; // 入力値をクリア
+                        passwordInput.focus();
+                    } else {
+                        // 閉じる場合：コンテンツを非表示にし、ボタンを戻す
+                        content.classList.add('hidden');
+                        toggleButton.textContent = '規約を開く（パスワード必要）';
+                    }
+                });
+
+                // 2. パスワード入力後の送信ハンドラ
+                const handleSubmit = () => {
+                    const enteredPassword = passwordInput.value;
+                    if (enteredPassword === SECRET_PASSWORD) {
+                        // 成功: コンテンツ表示、モーダル非表示
+                        content.classList.remove('hidden');
+                        toggleButton.textContent = '閉じる';
+                        modal.classList.add('hidden');
+                        passwordInput.value = '';
+                        errorMessage.classList.add('hidden');
+                        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        // 失敗: エラーメッセージ表示
+                        errorMessage.textContent = 'パスワードが違います。もう一度お試しください。';
+                        errorMessage.classList.remove('hidden');
+                        passwordInput.focus();
+                    }
+                };
+                
+                // 送信ボタンクリックイベント
+                submitButton.addEventListener('click', handleSubmit);
+
+                // Enterキーでも送信できるようにする
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // フォーム送信を防ぐ
+                        handleSubmit();
+                    }
+                });
+                
+                // 3. モーダル内の閉じるボタンハンドラ
+                closeButton.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                    passwordInput.value = '';
+                    errorMessage.classList.add('hidden');
+                });
+
+                // 4. モーダルの背景クリックで閉じるハンドラ
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        passwordInput.value = '';
+                        errorMessage.classList.add('hidden');
+                    }
+                });
+            };
+
+            setupAuth(passwordConfigs.kiyaku);
+            setupAuth(passwordConfigs.naiki);
+        });
+    </script>
+
+    <!-- Header -->
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-lg rounded-b-xl">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <img
+                        id="logoImage"
+                        src="https://i.imgur.com/3IEvNWU.png"
+                        alt="白羽町成年会のロゴ"
+                        class="h-10 w-10 md:h-12 md:w-12 mr-2 rounded-full shadow-lg transition-transform transform hover:scale-105"
+                        onerror="this.onerror=null;this.src='https://placehold.co/64x64/E0E7FF/4338CA?text=Logo';"
+                    >
+                </div>
+                <span class="text-xl md:text-2xl font-bold text-gray-800" data-editable="title">白羽町成年会</span>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm md:text-base">
+                <a href="#home" class="nav-link text-gray-600 font-semibold hover:text-blue-700">トップ</a>
+                <a href="#about" class="nav-link text-gray-600 font-semibold hover:text-blue-700">会長挨拶</a>
+                <a href="#organization" class="nav-link text-gray-600 font-semibold hover:text-blue-700">組織情報</a>
+                <a href="#rules" class="nav-link text-gray-600 font-semibold hover:text-blue-700">規約・内規</a>
+                <a href="#minutes" class="nav-link text-gray-600 font-semibold hover:text-blue-700">議事録</a>
+                <a href="#join-us" class="nav-link text-gray-600 font-semibold hover:text-blue-700">入会申し込み</a>
+                <a href="#takoagekai" class="nav-link text-gray-600 font-semibold hover:text-blue-700">凧揚会</a>
+                <a href="#contact" class="nav-link text-gray-600 font-semibold hover:text-blue-700">お問い合わせ</a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-gray-800 p-2 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                <svg id="menu-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-inner rounded-b-xl">
+            <a href="#home" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">トップ</a>
+            <a href="#about" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">会長挨拶</a>
+            <a href="#organization" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">組織情報</a>
+            <a href="#rules" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">規約・内規</a>
+            <a href="#minutes" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">議事録</a>
+            <a href="#join-us" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">入会申し込み</a>
+            <a href="#takoagekai" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">凧揚会</a>
+            <a href="#contact" class="block py-3 px-6 text-sm text-gray-700 hover:bg-gray-50">お問い合わせ</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Home Section -->
+        <section id="home" class="relative h-[70vh] min-h-[500px] flex items-center justify-center text-white">
+            <div id="slideshow-container" class="absolute inset-0">
+                <div class="slide active-slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/46864190-e51c-4b61-9c12-3c873111f267');"></div>
+                <div class="slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/330b6211-1335-4299-8260-2646c05a1099');"></div>
+                <div class="slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/b48a4c8a-4402-4214-935f-1748259e887e');"></div>
+                <div class="slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/00b14732-4752-47a2-9b0d-525d8c368686');"></div>
+            </div>
+            <div class="absolute inset-0 bg-black/50"></div>
+            <div class="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-center text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4 fade-in" data-editable="hero-title">伝統と交流を未来へ</h1>
+                <p class="text-lg md:text-xl max-w-3xl fade-in" data-editable="hero-subtitle">白羽町成年会は、地域の絆を深め、活気あるまちづくりに貢献します。</p>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-gray-800" data-editable="about-title">会長挨拶</h2>
+                    <p class="text-gray-500 mt-2 text-lg" data-editable="about-subtitle">白羽町成年会 会長 大庭 健嗣</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300" contenteditable="true" data-editable="about-text">
+                        <p class="text-xl text-gray-700 leading-relaxed">
+                            白羽町成年会は、地域の伝統を大切にしながら、活気あるまちづくりに貢献することを理念に活動しています。浜松まつりや白羽神社祭典といった歴史ある行事はもちろんのこと、ふれあい運動会、釣り大会、ボウリング大会など、住民同士の絆を深める交流イベントを多数企画しています。また、自治会と連携し、地域防災などの課題にも積極的に取り組んでまいります。
+                        </p>
+                        <p class="text-xl text-gray-700 leading-relaxed mt-4">
+                            私たちの活動は、ひとえに地域の皆様のご理解とご協力があってこそ成り立っています。
+                        </p>
+                        <p class="text-xl text-gray-700 leading-relaxed mt-4">
+                            これからも、伝統と「人と人とのつながり」を大切にしながら、活動を続けていきたいと考えています。今後とも、温かいご支援を心よりお願い申し上げます。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Organization Section -->
+        <section id="organization" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800" data-editable="organization-title">組織情報</h2>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="organization-subtitle">2024年度 白羽町成年会役員</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div id="officer-list-content" class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300" contenteditable="true" data-editable="officer-list">
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">顧問</h3>
+                            <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">清水 哲夫</p>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">会長</h3>
+                            <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">大庭 健嗣</p>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">副会長</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 md:gap-y-4">
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">伊藤 友之</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">伊藤 雄治</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">伊藤 浩子</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">太田 吉紀</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">杉山 範洋</p>
+                                <p class="text-600 text-xl md:text-2xl text-center font-bold">松本 正司</p>
+                            </div>
+                        </div>
+                        <!-- 監事と会計・書記を入れ替え -->
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">会計・書記</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-y-2 md:gap-y-4">
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">小倉 香純</p>
+                                <p class="text-600 text-xl md:text-2xl text-center font-bold">鈴木 康之</p>
+                                <p class="text-600 text-xl md:text-2xl text-center font-bold">辻 茜</p>
+                                <p class="text-600 text-xl md:text-2xl text-center font-bold">中野 一宏</p>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">監事</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-y-2 md:gap-y-4">
+                                <p class="text-gray-600 text-xl text-center font-bold">清水 源蔵</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">山本 和也</p>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">相談役</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 md:gap-y-4">
+                                <p class="text-gray-600 text-xl text-center font-bold">伊熊 敬通</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">大石 博之</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">太田 菊夫</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">加藤 祥啓</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">品田 基博</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">清水 源蔵</p>
+                                <p class="text-600 text-xl text-center font-bold">清水 富夫</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">鈴木 康之</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">高柳 哲司</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">高柳 力勇</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">寺田 圭一</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">中野 一宏</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">松本 正司</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">森 純雄</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">門奈 想</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">山本 和也</p>
+                                <p class="text-600 text-xl text-center font-bold">吉岡 信夫</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rules Section -->
+        <section id="rules" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800" data-editable="rules-title">規約・内規</h2>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="rules-subtitle">白羽町成年会活動の基盤となる規約及び内規です。</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <!-- 規約セクション -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                        <div class="text-center mb-4">
+                            <h3 class="text-2xl font-bold underline text-gray-800 mb-2">白羽町成年会規約</h3>
+                        </div>
+                        <div id="kiyaku-text-content" class="hidden" contenteditable="true" data-editable="kiyaku-text">
+                            <div class="space-y-4 text-base">
+                                <p><strong>第1条 名称</strong><br>この会は白羽町成年会と称し、事務所を白羽町公会堂内におく。</p>
+                                <p><strong>第2条 目的及び活動</strong><br>1. 町民相互の親睦と町民活動の促進をはかる。<br>2. この会は前項の目的を達するため、次の活動を行う。<br>(1) 各種スポーツ大会<br>(2) 娯楽・趣味<br>(3) 祭典行事<br>(4) 自治会行事への各種奉仕活動<br>(5) その他</p>
+                                <p><strong>第3条 会員</strong><br>この会の会員は、白羽町に存在する社会人であること。ただし、他町に存在する社会人であっても、この会に賛同する者は理事会の承認のうえ会員となることができる。</p>
+                                <p><strong>第4条 会計</strong><br>1. この会の活動に要する経費は、会費、寄付金、助成金及びその他の収入をもって、これに当てる。<br>2. 会員は別に定める会費を納入する。<br>3. この会の会計は会計監査を経て、総会の承認を受ける。<br>4. この会の会計年度は、7月1日から翌年6月30日までとする。</p>
+                                <p><strong>第5条 役員及び役員任期</strong><br>この会に次の役員を置き、任期は1年とし再任を妨げない。なお、補充役員の任期は前任者の在任期間とする。<br>1. 会長 1名<br>2. 副会長 若干名<br>3. 理事 若干名<br>4. 会計 2名<br>5. 書記 2名<br>6. 監事 2名<br>7. 顧問・相談役 若干名</p>
+                                <p><strong>第6条 役員選出</strong><br>役員の選出は次のとおりとする。<br>1. 会長、副会長、会計、書記及び監事は理事会にて選出し、総会の承認を得る。<br>2. 各組の理事は互選により選出し、総会において報告する。<br>3. 顧問及び相談役については、理事会の推薦により会長が委嘱し、総会において報告する。<br>4. 各サークルの部長にあっては、各活動毎に互選により選出し、総会において報告する。</p>
+                                <p><strong>第7条 役員の任務</strong><br>1. 会長はこの会を代表し、会務を統括する。<br>2. 副会長は会長を補佐し、会長事故ある時はその任務を代行する。<br>3. 理事は理事会を運営し、会員との連携を密にし会務を推進する。<br>4. 会計はこの会の経理をつかさどる。<br>5. 書記は会議の記録及び会務を処理する。<br>6. 監事はこの会の会計の監査にあたる。<br>7. 顧問及び相談役は会長の諮問及び相談に応ずる。<br>なお、白羽町「浜松まつり凧揚会」の主要役員を成年会より派遣する。</p>
+                                <p><strong>第8条 総会</strong><br>1. 総会は全会員をもって構成され、この会の最高決議機関であり、年度毎に開催する。<br>2. 理事会が必要と認めたときは、臨時総会を開くことができる。<br>3. 総会の付議事項は、次のとおりとする。<br>(1) 役員の決定<br>(2) 活動報告、会計報告及び会計監査の承認<br>(3) 新年度活動計画及び会計予算の承認<br>(4) その他必要事項</p>
+                                <p><strong>第9条 理事会</strong><br>1. 理事会は、会長、副会長、理事、会計、書記、顧問及び相談役をもって構成し、必要に応じて開催する。なお、議案によっては浜松まつり凧揚会の主要役員を参加させる。<br>(1) 総会に提出する議案の作成<br>(2) 総会で決定された事項の処理及び遂行<br>(3) 予算決算の審議<br>(4) その他必要と認めた事項</p>
+                                <p><strong>第10条 補足</strong><br>1. この会は規約の他に別の内規を定める。<br>2. 規約及び内規の改正は理事会の討議を経て、総会の承認を得なければならない。<br>3. この会の各種会議の構成及び議決は、過半数以上とする。<br>4. この会に次の帳簿を備える。<br>(1) 会員名簿<br>(2) 役員名簿<br>(3) 会計簿<br>(4) 記録簿<br>(5) その他必要と認めるもの</p>
+                                <p class="mt-4 text-sm text-gray-500">この規約は、平成3年6月29日一部改正する。</p>
+                                <p class="text-sm text-gray-500">この規約は、平成13年6月23日一部改正する。</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-center mt-6">
+                            <button id="toggle-kiyaku-text" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105">
+                                規約を開く（パスワード必要）
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 内規セクション -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                        <div class="text-center mb-4">
+                            <h3 class="text-2xl font-bold underline text-gray-800 mb-2">白羽町成年会内規</h3>
+                        </div>
+                        <div id="naiki-text-content" class="hidden" contenteditable="true" data-editable="naiki-text">
+                            <div class="space-y-4 text-base">
+                                <p><strong>第1条</strong> 白羽町成年会規約第10条に基づき、次のとおり定める。</p>
+                                <p><strong>第2条</strong> 会費は1会員につき年間千円とし、年度初めに納入する。</p>
+                                <p><strong>第3条</strong> 役員は年度末までに、会長、副会長、理事、会計、書記及び監事を選考する。この場合、副会長は原則として自治会の各部から1名宛選出する。</p>
+                                <p><strong>第4条</strong> 理事は、原則として自治会の各組より1名選出する。</p>
+                                <p><strong>第5条</strong> 会計は、会員より2名選出する。</p>
+                                <p><strong>第6条</strong> 書記は、会員より2名選出する。</p>
+                                <p><strong>第7条</strong> この会に新たに委員会などを設けるときは、理事会にはかり設置することができる。</p>
+                                <p><strong>第8条</strong> 役員並びに会員相互の連携を深めるため、冠婚葬祭等の取扱いは別に定める。</p>
+                                <p class="mt-4 text-sm text-gray-500">この内規は、昭和61年3月15日より施行する。</p>
+                                <p class="text-sm text-gray-500">この内規は、平成3年6月29日一部改正する。</p>
+                                <p class="text-sm text-gray-500">この内規は、平成13年6月23日一部改正する。</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-center mt-6">
+                            <button id="toggle-naiki-text" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105">
+                                規約を開く（パスワード必要）
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meeting Minutes Section -->
+        <section id="minutes" class="py-16 md:py-24">
+            <div class="container mx-auto px-6 text-center">
+                <div class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800" data-editable="minutes-title">成年会理事会 議事録</h2>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="minutes-subtitle">白羽町成年会 理事会の議事録はこちらのGoogleドライブからアクセスできます。</p>
+                </div>
+                <!-- リンク先はダミーです。必要に応じてGoogleフォームのURLに変更してください。 -->
+                <a href="https://forms.gle/dwhZTUNxXR6YDEPB6" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105" data-editable="minutes-button-text">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 4.07 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><rect x="7" y="10" width="10" height="4" rx="1"/></svg>
+                    <span>Googleドライブで開く</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 入会申し込み Section -->
+        <section id="join-us" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <div class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800" data-editable="join-us-title">成年会　入会申し込み</h2>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="join-us-subtitle">白羽町成年会への入会をご希望の方はこちらからお申し込みください。</p>
+                </div>
+                <!-- リンク先はダミーです。必要に応じてGoogleフォームのURLに変更してください。 -->
+                <a href="https://docs.google.com/forms/d/1LOYMnioOEMqaoGnsAAoX_cwW2WjKjcg2XAl1699-2_4/edit" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105" data-editable="join-us-button-text">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    <span>入会申し込みフォームへ</span>
+                </a>
+            </div>
+        </section>
+        
+        <!-- Takoagekai Section -->
+        <section id="takoagekai" class="relative overflow-hidden" style="background-image: url('https://i.imgur.com/I3Vjpgz.png'); background-size: cover; background-position: center;">
+            <!-- Overlay to ensure text readability -->
+            <div class="absolute inset-0 bg-black/50"></div>
+            
+            <div class="relative z-10 py-16 md:py-24 text-white">
+                <div class="container mx-auto px-6 text-center">
+                    <div class="mb-12 flex justify-center items-center flex-col">
+                        <h2 class="text-5xl font-bold" data-editable="takoagekai-title">白羽町凧揚会</h2>
+                        <h3 class="text-2xl font-bold">浜松まつりにおける各団体の役割</h3>
+                        <p class="mt-2 text-base" data-editable="takoagekai-subtitle">白羽町凧揚会のウェブサイトはこちらです。</p>
+                    </div>
+                    <div class="max-w-4xl mx-auto bg-white/20 backdrop-blur-sm p-8 rounded-2xl shadow-xl transition-shadow duration-300 mb-8" contenteditable="true" data-editable="takoagekai-text">
+                        <p class="text-xl text-white leading-relaxed mb-4">
+                            浜松まつりは、白羽町のいろんな団体が協力して盛り上げています！中でも特に大事な役割を担っているのが「白羽町自治会」「白羽町成年会」、そして「白羽町凧揚会（白羽組）」の3つの組織です。
+                        </p>
+                        <div class="space-y-6 text-left text-white">
+                            <div>
+                                <h4 class="text-xl font-bold">白羽町自治会</h4>
+                                <p class="text-lg mt-2">
+                                    浜松まつりの運営や町全体の連絡調整、そして町内の交通整理や清掃など、祭りの基盤を支える重要な役割を担っています。祭りの円滑な進行には欠かせない存在です。自治会長は凧揚会の会長も兼ねていて、全体のまとめ役として頑張ってくれています。
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold">白羽町成年会</h4>
+                                <p class="text-lg mt-2">
+                                    白羽町成年会は、町の皆さんが仲良くなるための活動をしている組織です。もちろん、浜松まつりにも力を入れていて、規約にもしっかり書いてある通り、凧揚会の主要メンバーは成年会から派遣されています。若い世代にも「タスキ」を渡すことで、将来の凧揚会や成年会を支えるメンバーを育てる役割も担っています。
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold">白羽町凧揚会（白羽組）</h4>
+                                <p class="text-lg mt-2">
+                                    白羽町成年会を母体に、浜松まつりで凧を挙げる専門部隊です！準備は前年の9月から開始されます。浜松まつりで初子のお祝いをしたり、みんなで思い出を作ったり、町の絆を深めるために活動しています。成年会から派遣されたメンバーや、組長の推薦で任命される「青年監督」が中心となって、若手メンバーをどんどん育てています。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="https://shirowacho.info/" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center space-x-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105" data-editable="takoagekai-button-text">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                        <span>凧揚会ウェブサイトへ</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- お問い合わせ Section (Simplified to a button) -->
+        <section id="contact" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <div class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800" data-editable="contact-title">お問い合わせ</h2>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="contact-subtitle">ご意見・ご質問など、お気軽にお問い合わせください。</p>
+                </div>
+                <!-- リンク先はダミーです。必要に応じてGoogleフォームのURLに変更してください。 -->
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeeDIGM8QGBWfgz62CYtffRe7Keg7mqmMRepDtvud8lajgUPA/viewform?usp=sf_link" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105" data-editable="contact-button-text">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 4.07 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><rect x="7" y="10" width="10" height="4" rx="1"/></svg>
+                    <span>お問い合わせフォームへ</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 rounded-t-xl mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-sm md:text-base">&copy; 2025 白羽町成年会. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top" class="fixed bottom-6 right-6 p-3 bg-blue-600 text-white rounded-full shadow-lg focus:outline-none z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+    </button>
+
+    <!-- 規約 パスワード認証カスタムモーダル -->
+    <div id="kiyaku-modal" class="custom-modal hidden fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative">
+            <h3 class="text-xl font-bold mb-4 text-center">規約の閲覧にはパスワードが必要です</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">「白羽町成年会規約」を閲覧するためのパスワードを入力してください。</p>
+            
+            <input type="password" id="kiyaku-password-input" placeholder="パスワードを入力"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3">
+            
+            <p id="kiyaku-error-message" class="text-red-600 text-sm hidden mb-4"></p>
+            
+            <button id="kiyaku-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200 mb-2">
+                認証して開く
+            </button>
+            <button id="kiyaku-close-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg transition duration-200">
+                キャンセル
+            </button>
+        </div>
+    </div>
+
+    <!-- 内規 パスワード認証カスタムモーダル -->
+    <div id="naiki-modal" class="custom-modal hidden fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative">
+            <h3 class="text-xl font-bold mb-4 text-center">規約の閲覧にはパスワードが必要です</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">「白羽町成年会内規」を閲覧するためのパスワードを入力してください。</p>
+            
+            <input type="password" id="naiki-password-input" placeholder="パスワードを入力"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3">
+            
+            <p id="naiki-error-message" class="text-red-600 text-sm hidden mb-4"></p>
+            
+            <button id="naiki-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200 mb-2">
+                認証して開く
+            </button>
+            <button id="naiki-close-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg transition duration-200">
+                キャンセル
+            </button>
+        </div>
+    </div>
+</body>
+</html>
