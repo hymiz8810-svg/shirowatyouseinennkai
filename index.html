@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>白羽町成年会 公式ウェブサイト</title>
-    <!-- XMLサイトマップへの参照を追加 (検索エンジン向け) -->
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +24,8 @@
         .slide {
             opacity: 0;
             transition: opacity 1s ease-in-out;
+            position: absolute;
+            inset: 0;
         }
         .active-slide {
             opacity: 1;
@@ -73,13 +73,10 @@
             }
         }
     </style>
-<meta name="google-site-verification" content="hYPDMshOWywZnEPqenR3zIwrNdr0LW_nqAWvf56VfbQ" />
 </head>
 <body class="bg-FDFBF6 text-gray-800 scroll-smooth">
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 既存のロジック（省略） ---
-            
             // Slideshow Logic with IntersectionObserver
             const slideshowContainer = document.getElementById('slideshow-container');
             const slides = document.querySelectorAll('.slide');
@@ -133,7 +130,7 @@
             });
             
             // --- カスタムパスワード認証ロジック ---
-            const SECRET_PASSWORD = '468'; // ここがパスワードです
+            const SECRET_PASSWORD = '468'; // パスワード
 
             const passwordConfigs = {
                 kiyaku: {
@@ -144,7 +141,7 @@
                     submit: 'kiyaku-submit-btn',
                     error: 'kiyaku-error-message',
                     close: 'kiyaku-close-btn',
-                    title: '白羽町成年会規約',
+                    title: '規約',
                 },
                 naiki: {
                     toggleButtonId: 'toggle-naiki-text',
@@ -154,7 +151,17 @@
                     submit: 'naiki-submit-btn',
                     error: 'naiki-error-message',
                     close: 'naiki-close-btn',
-                    title: '白羽町成年会内規',
+                    title: '内規',
+                },
+                keicho: {
+                    toggleButtonId: 'toggle-keicho-text',
+                    contentId: 'keicho-text-content',
+                    modalId: 'keicho-modal',
+                    input: 'keicho-password-input',
+                    submit: 'keicho-submit-btn',
+                    error: 'keicho-error-message',
+                    close: 'keicho-close-btn',
+                    title: '慶弔規約',
                 }
             };
 
@@ -171,7 +178,7 @@
 
                 // 初期状態設定
                 content.classList.add('hidden');
-                toggleButton.textContent = '規約を開く（パスワード必要）';
+                toggleButton.textContent = `${config.title}を開く（パスワード必要）`;
                 modal.classList.add('hidden'); // モーダルを非表示に
 
                 // 1. 開閉ボタンクリックハンドラ
@@ -185,7 +192,7 @@
                     } else {
                         // 閉じる場合：コンテンツを非表示にし、ボタンを戻す
                         content.classList.add('hidden');
-                        toggleButton.textContent = '規約を開く（パスワード必要）';
+                        toggleButton.textContent = `${config.title}を開く（パスワード必要）`;
                     }
                 });
 
@@ -238,6 +245,7 @@
 
             setupAuth(passwordConfigs.kiyaku);
             setupAuth(passwordConfigs.naiki);
+            setupAuth(passwordConfigs.keicho);
         });
     </script>
 
@@ -286,7 +294,7 @@
 
     <main>
         <!-- Home Section -->
-        <section id="home" class="relative h-[70vh] min-h-[500px] flex items-center justify-center text-white">
+        <section id="home" class="relative h-[70vh] min-h-[500px] flex items-center justify-center text-white overflow-hidden">
             <div id="slideshow-container" class="absolute inset-0">
                 <div class="slide active-slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/46864190-e51c-4b61-9c12-3c873111f267');"></div>
                 <div class="slide h-full w-full bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod/images/330b6211-1335-4299-8260-2646c05a1099');"></div>
@@ -328,7 +336,7 @@
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl font-bold text-gray-800" data-editable="organization-title">組織情報</h2>
-                    <p class="text-gray-500 mt-2 text-base" data-editable="organization-subtitle">2024年度 白羽町成年会役員</p>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="organization-subtitle">2025年度 白羽町成年会役員</p>
                 </div>
                 <div class="max-w-4xl mx-auto">
                     <div id="officer-list-content" class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300" contenteditable="true" data-editable="officer-list">
@@ -348,7 +356,7 @@
                                 <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">伊藤 浩子</p>
                                 <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">太田 吉紀</p>
                                 <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">杉山 範洋</p>
-                                <p class="text-600 text-xl md:text-2xl text-center font-bold">松本 正司</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">松本 正司</p>
                             </div>
                         </div>
                         <!-- 監事と会計・書記を入れ替え -->
@@ -356,9 +364,9 @@
                             <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">会計・書記</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-y-2 md:gap-y-4">
                                 <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">小倉 香純</p>
-                                <p class="text-600 text-xl md:text-2xl text-center font-bold">鈴木 康之</p>
-                                <p class="text-600 text-xl md:text-2xl text-center font-bold">辻 茜</p>
-                                <p class="text-600 text-xl md:text-2xl text-center font-bold">中野 一宏</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">鈴木 康之</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">辻 茜</p>
+                                <p class="text-gray-600 text-xl md:text-2xl text-center font-bold">中野 一宏</p>
                             </div>
                         </div>
                         <div class="mb-6">
@@ -371,13 +379,13 @@
                         <div class="mb-6">
                             <h3 class="text-2xl font-bold text-center underline text-gray-800 mb-2">相談役</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 md:gap-y-4">
-                                <p class="text-gray-600 text-xl text-center font-bold">伊熊 敬通</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">大石 博之</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">太田 菊夫</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">加藤 祥啓</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">品田 基博</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">清水 源蔵</p>
-                                <p class="text-600 text-xl text-center font-bold">清水 富夫</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">清水 富夫</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">鈴木 英明</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">鈴木 康之</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">高柳 哲司</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">高柳 力勇</p>
@@ -387,7 +395,7 @@
                                 <p class="text-gray-600 text-xl text-center font-bold">森 純雄</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">門奈 想</p>
                                 <p class="text-gray-600 text-xl text-center font-bold">山本 和也</p>
-                                <p class="text-600 text-xl text-center font-bold">吉岡 信夫</p>
+                                <p class="text-gray-600 text-xl text-center font-bold">吉岡 信夫</p>
                             </div>
                         </div>
                     </div>
@@ -400,7 +408,7 @@
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl font-bold text-gray-800" data-editable="rules-title">規約・内規</h2>
-                    <p class="text-gray-500 mt-2 text-base" data-editable="rules-subtitle">白羽町成年会活動の基盤となる規約及び内規です。</p>
+                    <p class="text-gray-500 mt-2 text-base" data-editable="rules-subtitle">白羽町成年会活動の基盤となる規約、内規、及び慶弔規約です。</p>
                 </div>
                 <div class="max-w-4xl mx-auto space-y-8">
                     <!-- 規約セクション -->
@@ -430,6 +438,7 @@
                             </button>
                         </div>
                     </div>
+
                     <!-- 内規セクション -->
                     <div class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
                         <div class="text-center mb-4">
@@ -444,15 +453,38 @@
                                 <p><strong>第5条</strong> 会計は、会員より2名選出する。</p>
                                 <p><strong>第6条</strong> 書記は、会員より2名選出する。</p>
                                 <p><strong>第7条</strong> この会に新たに委員会などを設けるときは、理事会にはかり設置することができる。</p>
-                                <p><strong>第8条</strong> 役員並びに会員相互の連携を深めるため、冠婚葬祭等の取扱いは別に定める。</p>
+                                <p><strong>第8条</strong> 役員並びに会員相互の連携を深めるため、冠婚葬祭等の取扱いは、別紙の白羽町成年会慶弔規約に定める。</p>
                                 <p class="mt-4 text-sm text-gray-500">この内規は、昭和61年3月15日より施行する。</p>
                                 <p class="text-sm text-gray-500">この内規は、平成3年6月29日一部改正する。</p>
                                 <p class="text-sm text-gray-500">この内規は、平成13年6月23日一部改正する。</p>
+                                <p class="text-sm text-gray-500">この内規は、令和8年6月28日一部改正する。</p>
                             </div>
                         </div>
                         <div class="flex justify-center mt-6">
                             <button id="toggle-naiki-text" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105">
-                                規約を開く（パスワード必要）
+                                内規を開く（パスワード必要）
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 慶弔規約セクション -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                        <div class="text-center mb-4">
+                            <h3 class="text-2xl font-bold underline text-gray-800 mb-2">白羽町成年会慶弔規約</h3>
+                        </div>
+                        <div id="keicho-text-content" class="hidden" contenteditable="true" data-editable="keicho-text">
+                            <div class="space-y-4 text-base">
+                                <p><strong>第1条（目的）</strong><br>本規約は、会員またはその近親者に不幸が生じた際に、会として適切な弔意を表し、互助の精神に基づき支援を行うことを目的とする。</p>
+                                <p><strong>第2条（弔意通知の対象）</strong><br>1. 会員、または当該会員が自治会費を同一に負担している世帯の一親等の親族に不幸が生じた場合、会として弔意を表する。<br>2. 「一親等の親族」とは、会員本人の父母、配偶者の父母及び会員の配偶者と子とする。</p>
+                                <p><strong>第3条（通知内容）</strong><br>通知時には以下の情報を含めるものとし、ご遺族の了承を得た範囲で行う。<br>・故人の氏名<br>・会員との続柄（例：〇〇会員の父、〇〇会員の義母）<br>・逝去日（必要に応じて）<br>・通夜・告別式の日時および会場<br>・宗教形式（仏式、神式、キリスト教式など、必要に応じて）</p>
+                                <p><strong>第4条（通知方法）</strong><br>1. 成年会長・副会長を通じた連絡網により、電話やライングループなどのデジタルツールを用いて速やかに会員へ情報を伝達する。<br>2. 自治会の回覧板を併用することも可能とするが、訃報についてはご遺族の意向を最優先とする。<br>3. ウェブサイトやSNS等、不特定多数 of 者が閲覧できるデジタル媒体には、弔意通知の対象となる故人に関する情報（氏名、日時、会場等）は原則として掲載しない。ただし、故人が地域に深く関わりがあり、ご遺族の同意がある場合は例外として検討する。</p>
+                                <p><strong>第5条（弔意の方法および費用）</strong><br>1. 原則として会からの香典（盆供料含む）は会長、または副会長が手配し、金額は会員は6千円、1親等の親族は3千円とし、年度予算内で計上・管理するものとする。<br>2. 会員個人による香典・供花等については、原則として2千円とし、盆供周りの香典については基本として1千円とし、各自の判断に委ね、会として取りまとめは行わない。</p>
+                                <p><strong>第6条（施行・見直し）</strong><br>1. 本規約は、理事会の承認を得た上で総会にて議決し、施行するものとする。<br>2. 社会状況の変化や会員の意見を踏まえ、必要に応じて定期的に見直しを行う。</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-center mt-6">
+                            <button id="toggle-keicho-text" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105">
+                                慶弔規約を開く（パスワード必要）
                             </button>
                         </div>
                     </div>
@@ -546,7 +578,7 @@
                     <p class="text-gray-500 mt-2 text-base" data-editable="contact-subtitle">ご意見・ご質問など、お気軽にお問い合わせください。</p>
                 </div>
                 <!-- リンク先はダミーです。必要に応じてGoogleフォームのURLに変更してください。 -->
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeeDIGM8QGBWfgz62CYtffRe7Keg7mqmMRepDtvud8lajgUPA/viewform?usp=sf_link" target="_blank" rel="noopener noreferrer"
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeeDIGM8QGBWfgz62CYtffRe7Keg7mqmMRepDtvud8lajgUPA/viewform?usp=sf_link" target="_blank" rel="noopener noreferrer"              
                    class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-transform duration-200 hover:scale-105" data-editable="contact-button-text">
                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 4.07 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><rect x="7" y="10" width="10" height="4" rx="1"/></svg>
                     <span>お問い合わせフォームへ</span>
@@ -555,51 +587,10 @@
         </section>
     </main>
 
-    <!-- Footer - サイトマップとして機能するように拡張 -->
-    <footer class="bg-gray-800 text-white py-12 rounded-t-xl mt-12">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 border-b border-gray-700 pb-8 mb-8">
-                <!-- カラム 1: サイトの概要 -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4 text-blue-300">白羽町成年会</h4>
-                    <p class="text-gray-400 text-sm">地域の伝統と交流を未来へ。活気あるまちづくりに貢献します。</p>
-                </div>
-
-                <!-- カラム 2: 主要メニュー (サイトマップA) -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4">主要メニュー</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#about" class="text-gray-400 hover:text-white transition duration-200">会長挨拶</a></li>
-                        <li><a href="#organization" class="text-gray-400 hover:text-white transition duration-200">組織情報</a></li>
-                        <li><a href="#rules" class="text-gray-400 hover:text-white transition duration-200">規約・内規</a></li>
-                        <li><a href="#minutes" class="text-gray-400 hover:text-white transition duration-200">議事録</a></li>
-                    </ul>
-                </div>
-
-                <!-- カラム 3: 外部連携・アクション (サイトマップB) -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4">関連リンク・アクション</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="https://shirowacho.info/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition duration-200">白羽町凧揚会ウェブサイト</a></li>
-                        <li><a href="#join-us" class="text-gray-400 hover:text-white transition duration-200">入会申し込み</a></li>
-                        <li><a href="#contact" class="text-gray-400 hover:text-white transition duration-200">お問い合わせ</a></li>
-                    </ul>
-                </div>
-
-                <!-- カラム 4: 法的情報とメタ情報 -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4">インフォメーション</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="/sitemap.xml" target="_blank" class="text-gray-400 hover:text-white transition duration-200">XMLサイトマップ</a></li>
-                        <li><p class="text-gray-500">事務所：白羽町公会堂内</p></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- コピーライト -->
-            <div class="text-center text-sm pt-4">
-                <p>&copy; 2025 白羽町成年会. All Rights Reserved.</p>
-            </div>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 rounded-t-xl mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-sm md:text-base">&copy; 2026 白羽町成年会. All Rights Reserved.</p>
         </div>
     </footer>
 
@@ -647,6 +638,26 @@
             </button>
         </div>
     </div>
-</body>
 
+    <!-- 慶弔規約 パスワード認証カスタムモーダル -->
+    <div id="keicho-modal" class="custom-modal hidden fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative">
+            <h3 class="text-xl font-bold mb-4 text-center">規約の閲覧にはパスワードが必要です</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">「白羽町成年会慶弔規約」を閲覧するためのパスワードを入力してください。</p>
+            
+            <input type="password" id="keicho-password-input" placeholder="パスワードを入力"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-3">
+            
+            <p id="keicho-error-message" class="text-red-600 text-sm hidden mb-4"></p>
+            
+            <button id="keicho-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200 mb-2">
+                認証して開く
+            </button>
+            <button id="keicho-close-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg transition duration-200">
+                キャンセル
+            </button>
+        </div>
+    </div>
+</body>
 </html>
+```
